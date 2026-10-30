@@ -1,0 +1,21 @@
+profile_id,education_level,known_tools,interests,weekly_hours,goal,about_me,correct_tracks
+synthetic-01,undergraduate,JavaScript|HTML|CSS,web development|frontend|APIs,8,internship,"I want to build websites with responsive interfaces and connect them to backend APIs.",full-stack
+synthetic-02,undergraduate,Canva|Excel,SEO|content strategy|campaigns,5,job,"I enjoy planning search campaigns and writing content that helps a brand reach new customers.",digital-marketing
+synthetic-03,undergraduate,Figma|Canva,user research|wireframes|prototypes,6,internship,"I want to understand user needs and turn them into tested interface prototypes.",ui-ux
+synthetic-04,undergraduate,Python,artificial intelligence|reasoning|intelligent systems,8,upskill,"I am curious about AI systems that reason and help people make decisions.",artificial-intelligence
+synthetic-05,undergraduate,Python|pandas|scikit-learn,machine learning|classification|regression,9,internship,"I want to train predictive models and learn how to evaluate their performance.",machine-learning
+synthetic-06,postgraduate,Python|pandas|Excel,data science|statistics|visualization,8,job,"I like exploring datasets with statistics and explaining useful patterns in charts.",data-science
+synthetic-07,diploma,Linux|Git|Docker,automation|CI/CD|deployment,8,job,"I want to automate builds and deployments and learn reliable infrastructure practices.",devops
+synthetic-08,undergraduate,SQL|Excel,dashboards|data cleaning|reports,6,internship,"I enjoy answering business questions by querying data and building clear dashboards.",data-analytics
+synthetic-09,undergraduate,Linux|Git,cloud|networking|infrastructure,7,upskill,"I want to learn cloud services and deploy applications on reliable infrastructure.",cloud-computing
+synthetic-10,undergraduate,JavaScript|Solidity,blockchain|distributed ledger|smart contracts,7,job,"I am interested in decentralized applications and how smart contracts work.",blockchain
+synthetic-11,undergraduate,Linux|Git,cybersecurity|network security|defense,8,internship,"I want to protect computer systems and understand defensive security practices.",cybersecurity
+synthetic-12,undergraduate,Canva|Excel,social media|content calendar|engagement,5,job,"I enjoy creating channel calendars and measuring how audiences engage with posts.",social-media-management
+synthetic-13,undergraduate,Python|Arduino,sensors|embedded|devices,8,upskill,"I want to connect physical sensors to small programs and connected devices.",internet-of-things
+synthetic-14,undergraduate,Python|PyTorch,neural networks|deep learning|linear algebra,10,internship,"I want to experiment with neural networks and understand how deep learning models learn.",deep-learning
+synthetic-15,postgraduate,Python,text processing|NLP|transformers,9,job,"I enjoy working with language data and want to build and evaluate text-processing systems.",natural-language-processing
+synthetic-16,undergraduate,SQL|Excel,KPI|business analytics|decisions,6,internship,"I want to connect business goals to useful metrics and communicate data-informed decisions.",business-analytics
+synthetic-17,undergraduate,Python|JavaScript|React,web development|frontend|backend,9,job,"I have built small web apps and want to create a complete portfolio project using APIs.",full-stack
+synthetic-18,secondary,Canva,SEO|marketing|content,5,upskill,"I like writing online content and learning how search and marketing campaigns grow an audience.",digital-marketing
+synthetic-19,diploma,SQL|Excel,analytics|dashboards|data,7,internship,"I want to clean spreadsheet data and make dashboards that explain what is happening.",data-analytics
+synthetic-20,undergraduate,Figma,user experience|usability|design,6,upskill,"I want to learn user-centered design and create accessible wireframes and prototypes.",ui-ux
