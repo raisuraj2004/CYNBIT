@@ -6,11 +6,13 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from config import MAX_ABOUT_CHARS
+from config import MAX_ABOUT_CHARS, MAX_TOOL_NAME_CHARS
 from core.schemas import TrackProfile
 
 _CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f-\x9f]")
-_TOOL_NAME_ALLOWLIST = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 .+#/_-]{0,39}$")
+_TOOL_NAME_ALLOWLIST = re.compile(
+    rf"^[A-Za-z0-9][A-Za-z0-9 .+#/_-]{{0,{MAX_TOOL_NAME_CHARS - 1}}}$"
+)
 
 
 def sanitize_text(value: str) -> str:
@@ -49,4 +51,3 @@ def sanitize_profile(raw: dict[str, Any]) -> TrackProfile:
         return TrackProfile.model_validate(cleaned)
     except ValidationError:
         raise
-

@@ -1,5 +1,15 @@
 """Deterministic recommendation generation from catalogue retrieval scores."""
 
+from config import (
+    FALLBACK_CONFIDENCE_BASE,
+    FALLBACK_CONFIDENCE_MAX,
+    FALLBACK_CONFIDENCE_MIN,
+    FALLBACK_ROADMAP_WEEKS,
+    FIRST_TASK_QUESTION_COUNT,
+    FIRST_TASK_MINUTES,
+    MAX_FALLBACK_SKILL_GAPS,
+    MAX_SKILLS_IN_REASON,
+)
 from core.retrieval import score_tracks
 from core.schemas import Recommendation, RoadmapItem, TrackProfile
 
@@ -10,7 +20,10 @@ def recommend_fallback(profile: TrackProfile) -> Recommendation:
     track, score = ranked[0]
     runner_up_score = ranked[1][1] if len(ranked) > 1 else 0.0
     margin = max(0.0, score - runner_up_score)
-    confidence = min(0.82, max(0.45, 0.55 + margin))
+    confidence = min(
+        FALLBACK_CONFIDENCE_MAX,
+        max(FALLBACK_CONFIDENCE_MIN, FALLBACK_CONFIDENCE_BASE + margin),
+    )
 
     skills = track.skills
     roadmap = [
@@ -25,16 +38,20 @@ def recommend_fallback(profile: TrackProfile) -> Recommendation:
             deliverable=f"A small project using {skills[min(1, len(skills) - 1)]}.",
         ),
         RoadmapItem(
-            week=3,
+            week=FALLBACK_ROADMAP_WEEKS,
             focus=f"Combine core {track.title} skills",
             deliverable=f"A portfolio-ready {track.title} mini-project.",
         ),
     ]
     known = {value.casefold() for value in profile.known_tools}
-    gaps = [skill for skill in track.skills if skill.casefold() not in known][:5]
+    gaps = [
+        skill
+        for skill in track.skills
+        if skill.casefold() not in known
+    ][:MAX_FALLBACK_SKILL_GAPS]
     reasons = [
         f"Your stated interests and background align with {track.title}.",
-        f"This track focuses on {', '.join(track.skills[:3])}.",
+        f"This track focuses on {', '.join(track.skills[:MAX_SKILLS_IN_REASON])}.",
         f"The estimated {track.typical_duration_weeks}-week duration can be paced around your weekly availability.",
     ]
     return Recommendation(
@@ -42,6 +59,9 @@ def recommend_fallback(profile: TrackProfile) -> Recommendation:
         confidence=confidence,
         reasons=reasons,
         roadmap=roadmap,
-        first_task=f"Spend 30 minutes exploring {track.skills[0]} and write down three questions you want to answer.",
+        first_task=(
+            f"Spend {FIRST_TASK_MINUTES} minutes exploring {track.skills[0]} "
+            f"and write down {FIRST_TASK_QUESTION_COUNT} questions you want to answer."
+        ),
         skill_gaps=gaps,
     )

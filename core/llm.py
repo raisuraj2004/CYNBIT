@@ -11,7 +11,9 @@ from urllib.request import Request, urlopen
 from config import (
     DEFAULT_GEMINI_MODEL,
     GEMINI_MODEL_PATTERN,
+    GEMINI_TEMPERATURE,
     LLM_TIMEOUT_SECONDS,
+    MAX_OUTPUT_TOKENS,
     MAX_LLM_ATTEMPTS,
     PROMPT_VERSION,
 )
@@ -129,7 +131,8 @@ class GeminiAdapter:
             "contents": [{"role": "user", "parts": [{"text": prompt}]}],
             "generationConfig": {
                 "responseMimeType": "application/json",
-                "temperature": 0.2,
+                "temperature": GEMINI_TEMPERATURE,
+                "maxOutputTokens": MAX_OUTPUT_TOKENS,
             },
         }
         request = Request(
@@ -165,4 +168,3 @@ class GeminiAdapter:
         if last_error is None:
             raise LLMError("Gemini could not complete the recommendation.")
         raise last_error
-

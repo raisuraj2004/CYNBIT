@@ -13,7 +13,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from config import DEFAULT_GEMINI_MODEL, MAX_LLM_CALLS_PER_DAY
+from config import (
+    DEFAULT_GEMINI_MODEL,
+    EVALUATION_PROFILE_COUNT,
+    MAX_LLM_CALLS_PER_DAY,
+)
 from core.db import Database
 from core.fallback import recommend_fallback
 from core.llm import GeminiAdapter, LLMError, build_prompt, parse_recommendation
@@ -46,8 +50,11 @@ def load_profiles() -> list[tuple[str, TrackProfile, set[str]]]:
             )
             labels = set(row["correct_tracks"].split("|"))
             profiles.append((row["profile_id"], profile, labels))
-    if len(profiles) != 20:
-        raise ValueError("Evaluation data must contain exactly 20 synthetic profiles.")
+    if len(profiles) != EVALUATION_PROFILE_COUNT:
+        raise ValueError(
+            "Evaluation data must contain exactly "
+            f"{EVALUATION_PROFILE_COUNT} synthetic profiles."
+        )
     return profiles
 
 

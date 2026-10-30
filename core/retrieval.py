@@ -7,7 +7,14 @@ from pathlib import Path
 
 import yaml
 
-from config import RETRIEVAL_WEIGHTS, TRACKS_PATH
+from config import (
+    EDUCATION_GAP_SCORE,
+    CATALOGUE_TRACK_COUNT,
+    MAX_TRACK_CANDIDATES,
+    NONMATCHING_GOAL_SCORE,
+    RETRIEVAL_WEIGHTS,
+    TRACKS_PATH,
+)
 from core.schemas import EducationLevel, Track, TrackProfile
 
 _TOKEN_PATTERN = re.compile(r"[a-z0-9]+(?:[+#.]|[a-z0-9])?")
@@ -24,8 +31,13 @@ def load_tracks(path: Path = TRACKS_PATH) -> list[Track]:
     with path.open("r", encoding="utf-8") as file:
         raw_tracks = yaml.safe_load(file)
     tracks = [Track.model_validate(item) for item in raw_tracks]
-    if len(tracks) != 16 or len({track.id for track in tracks}) != 16:
-        raise ValueError("The catalogue must contain exactly 16 unique tracks.")
+    if (
+        len(tracks) != CATALOGUE_TRACK_COUNT
+        or len({track.id for track in tracks}) != CATALOGUE_TRACK_COUNT
+    ):
+        raise ValueError(
+            f"The catalogue must contain exactly {CATALOGUE_TRACK_COUNT} unique tracks."
+        )
     return tracks
 
 
@@ -71,13 +83,13 @@ def score_tracks(
         keyword_tokens = set(_tokens(" ".join([track.title, *track.keywords])))
         skill_score = len(known_tokens & skill_tokens) / max(len(skill_tokens), 1)
         interest_score = len(interest_tokens & keyword_tokens) / max(len(interest_tokens), 1)
-        goal_score = 1.0 if profile.goal in track.goal_fit else 0.35
+        goal_score = 1.0 if profile.goal in track.goal_fit else NONMATCHING_GOAL_SCORE
         education_score = (
             1.0
             if track.minimum_education == "any"
             or _EDUCATION_RANK[profile.education_level.value]
             >= _EDUCATION_RANK[track.minimum_education]
-            else 0.4
+            else EDUCATION_GAP_SCORE
         )
         time_score = min(profile.weekly_hours / track.recommended_hours_per_week, 1.0)
         components = {
@@ -96,11 +108,9 @@ def score_tracks(
 def top_candidates(
     profile: TrackProfile,
     tracks: list[Track] | None = None,
-    limit: int = 5,
+    limit: int = MAX_TRACK_CANDIDATES,
 ) -> list[Track]:
     """Return no more than the configured maximum number of candidates."""
-    from config import MAX_TRACK_CANDIDATES
-
     if not 1 <= limit <= MAX_TRACK_CANDIDATES:
         raise ValueError("Candidate count is outside the configured limit.")
     return [track for track, _ in score_tracks(profile, tracks)[:limit]]

@@ -15,8 +15,16 @@ import streamlit as st
 
 from config import (
     DEFAULT_DB_PATH,
+    DEFAULT_WEEKLY_HOURS,
     MAX_LLM_CALLS_PER_DAY,
+    MAX_ABOUT_CHARS,
+    MAX_INTEREST_CHARS,
+    MAX_INTERESTS,
+    MAX_INTERESTS_INPUT_CHARS,
+    MAX_KNOWN_ITEMS,
     MAX_REQUESTS_PER_HOUR,
+    MAX_WEEKLY_HOURS,
+    MIN_WEEKLY_HOURS,
     PROMPT_VERSION,
     RATE_LIMIT_WINDOW_SECONDS,
 )
@@ -140,15 +148,23 @@ with st.form("path_finder_form"):
             "Canva",
         ],
         accept_new_options=True,
-        max_selections=20,
+        max_selections=MAX_KNOWN_ITEMS,
         help="You can type a language or tool not listed.",
     )
     interests_text = st.text_input(
         "Interests (comma-separated)",
-        max_chars=800,
-        help="Enter up to 10 interests; each interest can be up to 80 characters.",
+        max_chars=MAX_INTERESTS_INPUT_CHARS,
+        help=(
+            f"Enter up to {MAX_INTERESTS} interests; each interest can be up to "
+            f"{MAX_INTEREST_CHARS} characters."
+        ),
     )
-    weekly_hours = st.slider("Hours available each week", min_value=1, max_value=60, value=6)
+    weekly_hours = st.slider(
+        "Hours available each week",
+        min_value=MIN_WEEKLY_HOURS,
+        max_value=MAX_WEEKLY_HOURS,
+        value=DEFAULT_WEEKLY_HOURS,
+    )
     goal = st.selectbox(
         "Your goal",
         options=list(Goal),
@@ -156,7 +172,7 @@ with st.form("path_finder_form"):
     )
     about_me = st.text_area(
         "About me",
-        max_chars=800,
+        max_chars=MAX_ABOUT_CHARS,
         height=120,
         placeholder="Share your experience, strengths, and what you hope to learn.",
     )
@@ -257,25 +273,27 @@ if st.session_state["latest_outcome"] is not None:
     recommendation_id = st.session_state["latest_recommendation_id"]
     if recommendation_id:
         st.caption(f"Saved recommendation ID: {recommendation_id}")
-        with st.form("feedback_form"):
-            rating_label = st.selectbox("Was this recommendation useful?", ["👍 Yes", "👎 No"])
-            feedback_consent = st.checkbox(
-                "I consent to save this rating with my recommendation ID."
-            )
-            feedback_submitted = st.form_submit_button("Send optional feedback")
-        if feedback_submitted:
-            rating = 1 if rating_label.startswith("👍") else -1
-            try:
-                saved = database.add_feedback(recommendation_id, rating, feedback_consent)
-            except sqlite3.Error as error:
-                log_event("feedback_storage_failed", error_type=type(error).__name__)
-                st.error("We couldn't save feedback right now.")
+        rating_value = st.feedback("thumbs", key="recommendation_feedback_rating")
+        feedback_consent = st.checkbox(
+            "I consent to save this rating with my recommendation ID.",
+            key="recommendation_feedback_consent",
+        )
+        if st.button("Send optional feedback", key="submit_recommendation_feedback"):
+            if rating_value is None:
+                st.info("Choose thumbs up or down before sending feedback.")
+            elif not feedback_consent:
+                st.info("Feedback was not stored because consent was not selected.")
             else:
-                if saved:
-                    st.success("Thank you. Your feedback was saved.")
-                    log_event("feedback_saved", rating=rating)
+                rating = 1 if rating_value == 1 else -1
+                try:
+                    saved = database.add_feedback(recommendation_id, rating, feedback_consent)
+                except sqlite3.Error as error:
+                    log_event("feedback_storage_failed", error_type=type(error).__name__)
+                    st.error("We couldn't save feedback right now.")
                 else:
-                    st.info("Feedback was not stored because consent was not selected.")
+                    if saved:
+                        st.success("Thank you. Your feedback was saved.")
+                        log_event("feedback_saved", rating=rating)
     else:
         st.caption("This recommendation was not saved; optional feedback storage is unavailable.")
 

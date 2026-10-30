@@ -5,7 +5,35 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from config import MAX_ABOUT_CHARS, MAX_INTERESTS, MAX_KNOWN_ITEMS
+from config import (
+    MAX_ABOUT_CHARS,
+    MAX_FIRST_TASK_CHARS,
+    MAX_INTEREST_CHARS,
+    MAX_INTERESTS,
+    MAX_KNOWN_ITEMS,
+    MAX_RECOMMENDATION_REASONS,
+    MAX_RECOMMENDATION_TEXT_CHARS,
+    MIN_RECOMMENDATION_REASONS,
+    MAX_ROADMAP_DELIVERABLE_CHARS,
+    MAX_ROADMAP_FOCUS_CHARS,
+    MAX_ROADMAP_ITEMS,
+    MAX_ROADMAP_WEEKS,
+    MIN_ROADMAP_ITEMS,
+    MIN_ROADMAP_WEEK,
+    MAX_SKILL_GAPS,
+    MAX_TRACK_DESCRIPTION_CHARS,
+    MAX_TRACK_DURATION_WEEKS,
+    MAX_TRACK_KEYWORDS,
+    MAX_TRACK_PREREQUISITES,
+    MAX_TRACK_SKILLS,
+    MAX_TRACK_TITLE_CHARS,
+    MIN_TRACK_DURATION_WEEKS,
+    MAX_WEEKLY_HOURS,
+    MIN_CONFIDENCE,
+    MIN_TEXT_LENGTH,
+    MIN_WEEKLY_HOURS,
+    MAX_CONFIDENCE,
+)
 
 
 class EducationLevel(str, Enum):
@@ -33,7 +61,7 @@ class TrackProfile(BaseModel):
     education_level: EducationLevel
     known_tools: list[str] = Field(default_factory=list, max_length=MAX_KNOWN_ITEMS)
     interests: list[str] = Field(default_factory=list, max_length=MAX_INTERESTS)
-    weekly_hours: int = Field(ge=1, le=60)
+    weekly_hours: int = Field(ge=MIN_WEEKLY_HOURS, le=MAX_WEEKLY_HOURS)
     goal: Goal
     about_me: str = Field(max_length=MAX_ABOUT_CHARS)
 
@@ -47,8 +75,10 @@ class TrackProfile(BaseModel):
     @field_validator("interests")
     @classmethod
     def validate_interests(cls, values: list[str]) -> list[str]:
-        if any(not value or len(value) > 80 for value in values):
-            raise ValueError("Each interest must contain 1 to 80 characters.")
+        if any(not value or len(value) > MAX_INTEREST_CHARS for value in values):
+            raise ValueError(
+                f"Each interest must contain 1 to {MAX_INTEREST_CHARS} characters."
+            )
         return values
 
 
@@ -56,43 +86,73 @@ class Track(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     id: str = Field(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-    title: str = Field(min_length=1, max_length=80)
-    description: str = Field(min_length=1, max_length=500)
-    prerequisites: list[str] = Field(max_length=20)
-    skills: list[str] = Field(min_length=1, max_length=20)
-    keywords: list[str] = Field(min_length=1, max_length=30)
+    title: str = Field(min_length=MIN_TEXT_LENGTH, max_length=MAX_TRACK_TITLE_CHARS)
+    description: str = Field(
+        min_length=MIN_TEXT_LENGTH,
+        max_length=MAX_TRACK_DESCRIPTION_CHARS,
+    )
+    prerequisites: list[str] = Field(max_length=MAX_TRACK_PREREQUISITES)
+    skills: list[str] = Field(min_length=MIN_TEXT_LENGTH, max_length=MAX_TRACK_SKILLS)
+    keywords: list[str] = Field(
+        min_length=MIN_TEXT_LENGTH,
+        max_length=MAX_TRACK_KEYWORDS,
+    )
     difficulty: Difficulty
-    typical_duration_weeks: int = Field(ge=1, le=104)
+    typical_duration_weeks: int = Field(
+        ge=MIN_TRACK_DURATION_WEEKS,
+        le=MAX_TRACK_DURATION_WEEKS,
+    )
     minimum_education: Literal[
         "any", "secondary", "diploma", "undergraduate", "postgraduate"
     ]
-    recommended_hours_per_week: int = Field(ge=1, le=60)
-    goal_fit: list[Goal] = Field(min_length=1)
+    recommended_hours_per_week: int = Field(
+        ge=MIN_WEEKLY_HOURS,
+        le=MAX_WEEKLY_HOURS,
+    )
+    goal_fit: list[Goal] = Field(min_length=MIN_TEXT_LENGTH)
 
 
 class RoadmapItem(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    week: int = Field(ge=1, le=52)
-    focus: str = Field(min_length=1, max_length=120)
-    deliverable: str = Field(min_length=1, max_length=240)
+    week: int = Field(ge=MIN_ROADMAP_WEEK, le=MAX_ROADMAP_WEEKS)
+    focus: str = Field(
+        min_length=MIN_TEXT_LENGTH,
+        max_length=MAX_ROADMAP_FOCUS_CHARS,
+    )
+    deliverable: str = Field(
+        min_length=MIN_TEXT_LENGTH,
+        max_length=MAX_ROADMAP_DELIVERABLE_CHARS,
+    )
 
 
 class Recommendation(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     recommended_track: str = Field(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-    confidence: float = Field(ge=0.0, le=1.0)
-    reasons: list[str] = Field(min_length=1, max_length=5)
-    roadmap: list[RoadmapItem] = Field(min_length=2, max_length=6)
-    first_task: str = Field(min_length=1, max_length=300)
-    skill_gaps: list[str] = Field(max_length=10)
+    confidence: float = Field(ge=MIN_CONFIDENCE, le=MAX_CONFIDENCE)
+    reasons: list[str] = Field(
+        min_length=MIN_RECOMMENDATION_REASONS,
+        max_length=MAX_RECOMMENDATION_REASONS,
+    )
+    roadmap: list[RoadmapItem] = Field(
+        min_length=MIN_ROADMAP_ITEMS,
+        max_length=MAX_ROADMAP_ITEMS,
+    )
+    first_task: str = Field(
+        min_length=MIN_TEXT_LENGTH,
+        max_length=MAX_FIRST_TASK_CHARS,
+    )
+    skill_gaps: list[str] = Field(max_length=MAX_SKILL_GAPS)
 
     @field_validator("reasons", "skill_gaps")
     @classmethod
     def validate_short_text(cls, values: list[str]) -> list[str]:
-        if any(len(value) > 240 for value in values):
-            raise ValueError("Recommendation text must be 240 characters or fewer.")
+        if any(len(value) > MAX_RECOMMENDATION_TEXT_CHARS for value in values):
+            raise ValueError(
+                "Recommendation text must be "
+                f"{MAX_RECOMMENDATION_TEXT_CHARS} characters or fewer."
+            )
         return values
 
 

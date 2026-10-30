@@ -8,8 +8,12 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from config import DEFAULT_DB_PATH, SCHEMA_PATH
-from config import RATE_LIMIT_RETENTION_HOURS
+from config import (
+    DEFAULT_DB_PATH,
+    RATE_LIMIT_RETENTION_HOURS,
+    SCHEMA_PATH,
+    SQLITE_BUSY_TIMEOUT_SECONDS,
+)
 from core.schemas import Recommendation, Track, TrackProfile
 
 
@@ -34,7 +38,10 @@ class Database:
         self.initialize()
 
     def _connect(self) -> sqlite3.Connection:
-        connection = sqlite3.connect(self.path, timeout=5)
+        connection = sqlite3.connect(
+            self.path,
+            timeout=SQLITE_BUSY_TIMEOUT_SECONDS,
+        )
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA foreign_keys = ON")
         return connection
