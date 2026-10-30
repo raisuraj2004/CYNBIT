@@ -165,7 +165,7 @@ person.
 | Fallback top-1 accuracy | 100.0% (20/20) |
 | Fallback top-3 accuracy | 100.0% (20/20) |
 | Fallback JSON validity | 100.0% (20/20) |
-| Average local fallback latency | 17.19 ms |
+| Average local fallback latency | 21.18 ms |
 | Injection tests | 6/6 passed (100.0%) |
 | Live Gemini comparison | Not run; no API key configured |
 

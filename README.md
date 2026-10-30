@@ -105,7 +105,7 @@ environment:
 | Fallback top-1 accuracy | 100.0% |
 | Fallback top-3 accuracy | 100.0% |
 | Fallback JSON validity | 100.0% |
-| Average local fallback latency | 17.19 ms |
+| Average local fallback latency | 21.18 ms |
 | Prompt-injection cases passed | 6/6 (100.0%) |
 | Live Gemini comparison | Not run; no API key configured |
 
