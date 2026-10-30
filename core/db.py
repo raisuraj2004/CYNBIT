@@ -5,10 +5,11 @@ import json
 import os
 import sqlite3
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from config import DEFAULT_DB_PATH, SCHEMA_PATH
+from config import RATE_LIMIT_RETENTION_HOURS
 from core.schemas import Recommendation, Track, TrackProfile
 
 
@@ -106,8 +107,6 @@ class Database:
         recommendation_id = str(uuid.uuid4())
         structured_profile = {
             "education_level": profile.education_level.value,
-            "known_tools": profile.known_tools,
-            "interests": profile.interests,
             "weekly_hours": profile.weekly_hours,
             "goal": profile.goal.value,
         }
@@ -175,6 +174,13 @@ class Database:
             raise ValueError("Invalid rate-limit parameters.")
         with self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
+            connection.execute(
+                """
+                DELETE FROM rate_limits
+                WHERE bucket_type IN ('session', 'ip') AND window_start < ?
+                """,
+                (self._retention_cutoff(window_start),),
+            )
             row = connection.execute(
                 """
                 SELECT window_start, request_count
@@ -203,9 +209,14 @@ class Database:
             )
         return True
 
+    @staticmethod
+    def _retention_cutoff(window_start: str) -> str:
+        """Bound operational hash retention to the configured rolling window."""
+        window = datetime.fromisoformat(window_start)
+        return (window - timedelta(hours=RATE_LIMIT_RETENTION_HOURS)).isoformat()
+
     def track_count(self) -> int:
         """Return the number of seeded tracks."""
         with self._connect() as connection:
             row = connection.execute("SELECT COUNT(*) AS count FROM tracks").fetchone()
         return int(row["count"])
-

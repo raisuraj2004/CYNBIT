@@ -94,3 +94,13 @@ class Recommendation(BaseModel):
         if any(len(value) > 240 for value in values):
             raise ValueError("Recommendation text must be 240 characters or fewer.")
         return values
+
+
+class RecommendationOutcome(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    recommendation: Recommendation
+    source: Literal["llm", "fallback"]
+    model_name: str | None = None
+    latency_ms: int = Field(ge=0)
+    note: str | None = None

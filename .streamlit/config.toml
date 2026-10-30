@@ -1,0 +1,10 @@
+[client]
+showErrorDetails = false
+
+[server]
+enableCORS = true
+enableXsrfProtection = true
+headless = true
+
+[browser]
+gatherUsageStats = false

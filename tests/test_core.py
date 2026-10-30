@@ -83,7 +83,11 @@ def test_fallback_is_valid_deterministic_and_catalogue_bounded():
 
 def test_db_parameterization_and_free_text_exclusion(database, tmp_path):
     free_text = "'; DROP TABLE tracks; --"
-    profile = valid_profile(about_me=free_text)
+    profile = valid_profile(
+        about_me=free_text,
+        known_tools=["5555555555"],
+        interests=["Alice Smith"],
+    )
     recommendation = recommend_fallback(profile)
     recommendation_id = database.save_recommendation(
         profile,
@@ -102,6 +106,10 @@ def test_db_parameterization_and_free_text_exclusion(database, tmp_path):
     assert row is not None
     assert free_text not in row[0]
     assert "about_me" not in json.loads(row[0])
+    assert "known_tools" not in json.loads(row[0])
+    assert "interests" not in json.loads(row[0])
+    assert "5555555555" not in row[0]
+    assert "Alice Smith" not in row[0]
     assert len(row[1]) == 64
     assert track_count == 16
     assert canonical_input_hash(profile) == row[1]
@@ -126,6 +134,17 @@ def test_rate_limit_is_atomic_and_resets_for_new_window(database):
     assert database.consume_limit("session", "hash", 2, "2026-10-30T22")
     assert not database.consume_limit("session", "hash", 2, "2026-10-30T22")
     assert database.consume_limit("session", "hash", 2, "2026-10-30T23")
+
+
+def test_rate_limit_hashes_expire_after_retention_period(database):
+    assert database.consume_limit("ip", "old-hash", 2, "2026-10-27T00:00:00+00:00")
+    assert database.consume_limit("ip", "new-hash", 2, "2026-10-30T00:00:00+00:00")
+    with sqlite3.connect(database.path) as connection:
+        rows = connection.execute(
+            "SELECT bucket_key FROM rate_limits WHERE bucket_type = ?",
+            ("ip",),
+        ).fetchall()
+    assert rows == [("new-hash",)]
 
 
 def test_feedback_requires_consent_and_deletes_with_recommendation(database):
