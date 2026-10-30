@@ -1,0 +1,176 @@
+- id: full-stack
+  title: Full Stack Development
+  description: Build interactive web applications across browser interfaces, APIs, and databases.
+  prerequisites: [HTML, CSS, JavaScript]
+  skills: [HTML, CSS, JavaScript, React, APIs, SQL]
+  keywords: [web development, frontend, backend, websites, applications, portfolio]
+  difficulty: beginner
+  typical_duration_weeks: 16
+  minimum_education: any
+  recommended_hours_per_week: 8
+  goal_fit: [internship, job, upskill]
+- id: digital-marketing
+  title: Digital Marketing
+  description: Plan and measure search, content, and campaign activity for digital channels.
+  prerequisites: [Communication, basic analytics]
+  skills: [SEO, content strategy, campaign planning, analytics, advertising]
+  keywords: [marketing, search, campaigns, growth, content, brand]
+  difficulty: beginner
+  typical_duration_weeks: 10
+  minimum_education: any
+  recommended_hours_per_week: 5
+  goal_fit: [internship, job, upskill]
+- id: ui-ux
+  title: UI/UX Design
+  description: Research user needs and create usable interfaces, flows, and prototypes.
+  prerequisites: [Visual communication]
+  skills: [user research, wireframing, prototyping, usability, Figma]
+  keywords: [design, interface, experience, user, product, prototype]
+  difficulty: beginner
+  typical_duration_weeks: 12
+  minimum_education: any
+  recommended_hours_per_week: 6
+  goal_fit: [internship, job, upskill]
+- id: artificial-intelligence
+  title: Artificial Intelligence
+  description: Explore intelligent systems, search, reasoning, and responsible AI applications.
+  prerequisites: [Python, basic mathematics]
+  skills: [Python, search algorithms, knowledge representation, AI applications]
+  keywords: [artificial intelligence, intelligent systems, reasoning, agents]
+  difficulty: intermediate
+  typical_duration_weeks: 14
+  minimum_education: undergraduate
+  recommended_hours_per_week: 8
+  goal_fit: [internship, job, upskill]
+- id: machine-learning
+  title: Machine Learning
+  description: Prepare data, train baseline predictive models, and evaluate their performance.
+  prerequisites: [Python, statistics, linear algebra]
+  skills: [Python, pandas, scikit-learn, feature engineering, model evaluation]
+  keywords: [machine learning, predictive models, classification, regression, data]
+  difficulty: intermediate
+  typical_duration_weeks: 16
+  minimum_education: undergraduate
+  recommended_hours_per_week: 9
+  goal_fit: [internship, job, upskill]
+- id: data-science
+  title: Data Science
+  description: Use programming and statistics to explore data and communicate evidence-based findings.
+  prerequisites: [Python, statistics]
+  skills: [Python, pandas, statistics, visualization, data storytelling]
+  keywords: [data science, analysis, statistics, insights, experiments]
+  difficulty: intermediate
+  typical_duration_weeks: 16
+  minimum_education: undergraduate
+  recommended_hours_per_week: 8
+  goal_fit: [internship, job, upskill]
+- id: devops
+  title: DevOps
+  description: Automate software delivery and learn practical infrastructure and deployment workflows.
+  prerequisites: [Linux basics, Git]
+  skills: [Linux, Git, Docker, CI/CD, cloud deployment]
+  keywords: [devops, automation, delivery, infrastructure, deployment, reliability]
+  difficulty: intermediate
+  typical_duration_weeks: 14
+  minimum_education: any
+  recommended_hours_per_week: 8
+  goal_fit: [internship, job, upskill]
+- id: data-analytics
+  title: Data Analytics
+  description: Query, clean, and visualize business data to answer practical questions.
+  prerequisites: [Spreadsheets, basic numeracy]
+  skills: [SQL, Excel, data cleaning, dashboards, statistics]
+  keywords: [analytics, reports, dashboards, business questions, insights]
+  difficulty: beginner
+  typical_duration_weeks: 10
+  minimum_education: any
+  recommended_hours_per_week: 6
+  goal_fit: [internship, job, upskill]
+- id: cloud-computing
+  title: Cloud Computing
+  description: Learn cloud foundations, service models, deployment, and basic architecture.
+  prerequisites: [Networking basics, Linux]
+  skills: [cloud fundamentals, networking, Linux, deployment, IAM]
+  keywords: [cloud, AWS, Azure, Google Cloud, infrastructure, architecture]
+  difficulty: intermediate
+  typical_duration_weeks: 12
+  minimum_education: any
+  recommended_hours_per_week: 7
+  goal_fit: [internship, job, upskill]
+- id: blockchain
+  title: Blockchain
+  description: Understand distributed ledgers, smart contract concepts, and decentralized applications.
+  prerequisites: [Programming basics, web fundamentals]
+  skills: [Solidity, smart contracts, distributed systems, Web3]
+  keywords: [blockchain, decentralized, crypto, ledger, smart contracts]
+  difficulty: intermediate
+  typical_duration_weeks: 12
+  minimum_education: any
+  recommended_hours_per_week: 7
+  goal_fit: [internship, job, upskill]
+- id: cybersecurity
+  title: Cybersecurity
+  description: Build defensive security foundations around networks, systems, and secure practices.
+  prerequisites: [Networking basics, operating systems]
+  skills: [network security, Linux, threat modeling, secure coding, incident response]
+  keywords: [cybersecurity, security, defense, privacy, risk, protection]
+  difficulty: intermediate
+  typical_duration_weeks: 14
+  minimum_education: any
+  recommended_hours_per_week: 8
+  goal_fit: [internship, job, upskill]
+- id: social-media-management
+  title: Social Media Management
+  description: Plan channel-specific content calendars and measure audience engagement.
+  prerequisites: [Writing, communication]
+  skills: [content calendars, community management, analytics, copywriting, strategy]
+  keywords: [social media, audience, engagement, channels, content]
+  difficulty: beginner
+  typical_duration_weeks: 8
+  minimum_education: any
+  recommended_hours_per_week: 5
+  goal_fit: [internship, job, upskill]
+- id: internet-of-things
+  title: Internet of Things
+  description: Connect sensors and embedded devices to applications and data services.
+  prerequisites: [Programming basics, electronics basics]
+  skills: [Python, microcontrollers, sensors, networking, embedded systems]
+  keywords: [IoT, internet of things, devices, sensors, embedded, hardware]
+  difficulty: intermediate
+  typical_duration_weeks: 14
+  minimum_education: any
+  recommended_hours_per_week: 8
+  goal_fit: [internship, job, upskill]
+- id: deep-learning
+  title: Deep Learning
+  description: Study neural networks and build small experiments using modern deep learning libraries.
+  prerequisites: [Python, linear algebra, machine learning]
+  skills: [Python, neural networks, PyTorch, optimization, model evaluation]
+  keywords: [deep learning, neural networks, computer vision, representation learning]
+  difficulty: advanced
+  typical_duration_weeks: 18
+  minimum_education: undergraduate
+  recommended_hours_per_week: 10
+  goal_fit: [internship, job, upskill]
+- id: natural-language-processing
+  title: Natural Language Processing
+  description: Process and evaluate text data using practical language-processing techniques.
+  prerequisites: [Python, statistics]
+  skills: [Python, text processing, NLP, transformers, evaluation]
+  keywords: [natural language processing, NLP, text, language models, linguistics]
+  difficulty: advanced
+  typical_duration_weeks: 16
+  minimum_education: undergraduate
+  recommended_hours_per_week: 9
+  goal_fit: [internship, job, upskill]
+- id: business-analytics
+  title: Business Analytics
+  description: Connect business goals to structured analysis, metrics, and decision-ready recommendations.
+  prerequisites: [Spreadsheets, communication]
+  skills: [SQL, Excel, KPI design, visualization, business cases]
+  keywords: [business analytics, strategy, metrics, decisions, operations]
+  difficulty: beginner
+  typical_duration_weeks: 10
+  minimum_education: any
+  recommended_hours_per_week: 6
+  goal_fit: [internship, job, upskill]
