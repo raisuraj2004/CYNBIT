@@ -118,10 +118,13 @@ environment:
 | Fallback JSON validity | 100.0% |
 | Average local fallback latency | 21.18 ms |
 | Prompt-injection cases passed | 6/6 (100.0%) |
-| Live Gemini comparison | Not run; no API key configured |
+| Live Gemini API check | Attempted with key configured; Gemini returned HTTP 503 |
 
-These are measurements on the included synthetic fixtures only. The live LLM
-accuracy, JSON validity, and latency are **not measured**.
+The Gemini request reached the provider but returned HTTP 503, so it produced no
+recommendation. This is different from the app's “no API key configured”
+fallback case. Gemini evaluation accuracy, JSON validity, and latency are still
+**not measured**; the results above are measurements on the included synthetic
+fixtures only.
 
 ## Limitations
 
@@ -132,8 +135,9 @@ accuracy, JSON validity, and latency are **not measured**.
   Cynbit program data in this repository.
 - Retrieval is a small lexical TF-IDF/rule-based baseline, not a learned
   personalization model; confidence is heuristic and uncalibrated.
-- No live Gemini comparison was run. Provider/model pricing, data handling,
-  latency, and availability must be checked before a pilot.
+- The live Gemini check returned HTTP 503, so no Gemini comparison metrics are
+  available. Provider/model pricing, data handling, latency, and availability
+  must be checked before a pilot.
 - Latency is local and synthetic; it is not a cloud/provider performance
   measurement.
 

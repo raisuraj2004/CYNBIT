@@ -169,11 +169,12 @@ person.
 | Fallback JSON validity | 100.0% (20/20) |
 | Average local fallback latency | 21.18 ms |
 | Injection tests | 6/6 passed (100.0%) |
-| Live Gemini comparison | Not run; no API key configured |
+| Live Gemini API check | Attempted with key configured; Gemini returned HTTP 503 |
 
 The perfect synthetic accuracy reflects deliberately clear lexical examples
-and is not a generalization claim. Gemini top-1/top-3, response validity, and
-latency remain unmeasured.
+and is not a generalization claim. The API check returned HTTP 503 and produced
+no recommendation; this differs from the no-key fallback case. Gemini
+top-1/top-3 accuracy, response validity, and latency remain unmeasured.
 
 ## Cost estimate
 
