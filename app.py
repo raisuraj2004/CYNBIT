@@ -29,6 +29,7 @@ from config import (
     RATE_LIMIT_WINDOW_SECONDS,
 )
 from core.db import Database
+from core.llm import configured_value
 from core.recommendation_service import get_recommendation
 from core.retrieval import load_tracks
 from core.sanitize import sanitize_profile
@@ -36,6 +37,10 @@ from core.schemas import EducationLevel, Goal, RecommendationOutcome
 
 logger = logging.getLogger("bitelelvate_path_finder")
 logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+
+class MissingProfileSignal(ValueError):
+    """Raised when the submitted form contains no personalization details."""
 
 
 @st.cache_resource(max_entries=1)
@@ -94,6 +99,10 @@ st.info(
     "enabled and you opt in below, the sanitized profile (including your free-text answer) "
     "is sent to Google Gemini. Recommendation storage is separately opt-in. Hashed session "
     "and IP rate-limit counters are stored in SQLite even when recommendation storage is off."
+)
+st.caption(
+    "Gemini API key: "
+    + ("configured (value hidden)" if configured_value("GOOGLE_API_KEY") else "not configured")
 )
 
 database_path = os.environ.get("BIT_ELEVATE_DB_PATH", str(DEFAULT_DB_PATH))
@@ -184,16 +193,26 @@ with st.form("path_finder_form"):
 
 if submitted:
     try:
+        interests = [
+            item.strip()
+            for item in interests_text.split(",")
+            if item.strip()
+        ]
+        if not (known_tools or interests or about_me.strip()):
+            raise MissingProfileSignal
         profile = sanitize_profile(
             {
                 "education_level": education.value,
                 "known_tools": known_tools,
-                "interests": [item.strip() for item in interests_text.split(",") if item.strip()],
+                "interests": interests,
                 "weekly_hours": weekly_hours,
                 "goal": goal.value,
                 "about_me": about_me,
             }
         )
+    except MissingProfileSignal:
+        st.error("Add at least one tool, interest, or background detail to personalize your path.")
+        log_event("profile_missing_signal")
     except (TypeError, ValueError):
         st.error("Please check your entries: one or more fields are invalid or too long.")
         log_event("profile_validation_failed")

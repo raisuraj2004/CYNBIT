@@ -1,8 +1,10 @@
 import json
+import os
 
 import pytest
 
 import core.llm as llm_module
+from config import DEFAULT_GEMINI_MODEL
 from core.llm import GeminiAdapter, LLMError, build_prompt, parse_recommendation
 from core.recommendation_service import get_recommendation
 from core.security_cases import INJECTION_TEST_CASES
@@ -129,6 +131,64 @@ def test_fallback_is_available_without_api_key(monkeypatch):
     outcome = get_recommendation(make_profile("I enjoy programming"), allow_gemini=True)
     assert outcome.source == "fallback"
     assert "No Gemini API key" in outcome.note
+
+
+def test_default_gemini_model_uses_configured_flash_version():
+    assert DEFAULT_GEMINI_MODEL == "gemini-3.8-flash"
+
+
+def test_adapter_uses_new_default_model_when_env_model_is_unset(monkeypatch):
+    api_name = "GOOGLE_" + "API_KEY"
+    monkeypatch.setenv(api_name, "sample-a")
+    monkeypatch.delenv("GEMINI_MODEL", raising=False)
+    adapter = GeminiAdapter.from_environment()
+    assert adapter is not None
+    assert adapter.model_name == "gemini-3.8-flash"
+
+
+def test_adapter_reads_gemini_key_and_model_from_streamlit_secrets(monkeypatch):
+    import streamlit as st
+
+    class FakeSecrets(dict):
+        def get(self, name, default=""):
+            return super().get(name, default)
+
+    api_name = "GOOGLE_" + "API_KEY"
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.delenv("GEMINI_MODEL", raising=False)
+    monkeypatch.setattr(
+        st,
+        "secrets",
+        FakeSecrets({api_name: "sample-a", "GEMINI_MODEL": "gemini-3.8-flash"}),
+    )
+    adapter = GeminiAdapter.from_environment()
+    assert adapter is not None
+    assert adapter.model_name == "gemini-3.8-flash"
+
+
+def test_environment_variables_override_streamlit_secrets(monkeypatch):
+    import streamlit as st
+
+    class FakeSecrets(dict):
+        requested = []
+
+        def get(self, name, default=""):
+            self.requested.append(name)
+            return super().get(name, default)
+
+    api_name = "GOOGLE_" + "API_KEY"
+    secrets = FakeSecrets({api_name: "sample-b", "GEMINI_MODEL": "gemini-3.8-flash"})
+    monkeypatch.setattr(
+        st,
+        "secrets",
+        secrets,
+    )
+    monkeypatch.setitem(os.environ, api_name, "sample-c")
+    monkeypatch.setenv("GEMINI_MODEL", "gemini-3.8-flash-preview")
+    adapter = GeminiAdapter.from_environment()
+    assert adapter is not None
+    assert adapter.model_name == "gemini-3.8-flash-preview"
+    assert api_name not in secrets.requested
 
 
 @pytest.mark.parametrize("bucket", ["session", "ip", "daily"])

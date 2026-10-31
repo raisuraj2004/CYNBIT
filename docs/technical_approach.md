@@ -10,12 +10,13 @@ material. No real student or private company information is used.
 
 ## Model choice
 
-The optional provider is Google Gemini, using `gemini-2.5-flash` behind the
+The optional provider is Google Gemini, using `gemini-3.8-flash` behind the
 small `GeminiAdapter` in `core/llm.py`. It is selected for a concise,
 structured-text recommendation task and a simple HTTP integration; the app
 uses Python’s standard-library HTTP client rather than adding a second model
 SDK. Provider access is disabled unless both the user opts in and
-`GOOGLE_API_KEY` is present. `responseMimeType: application/json` requests
+`GOOGLE_API_KEY` is present in the process environment or Streamlit secrets.
+`responseMimeType: application/json` requests
 JSON, while Pydantic validation and the catalogue allowlist—not the model—are
 the final authority.
 
@@ -131,8 +132,9 @@ placeholders are JSON strings, not executable instructions.
   exercised in tests and evaluation.
 - **Output:** all model-controlled text is HTML-escaped and rendered through
   plain-text Streamlit elements. No `unsafe_allow_html`, `eval`, or `exec`.
-- **Secrets:** only `GOOGLE_API_KEY` from the process environment is read. No
-  secret file is tracked; `.env` and Streamlit secrets are ignored.
+- **Secrets:** `GOOGLE_API_KEY` and optional `GEMINI_MODEL` are read from the
+  process environment first, then Streamlit secrets. No secret file is
+  tracked; `.env` and `.streamlit/secrets.toml` are ignored.
 - **SQL:** static SQL statements with bound parameters; foreign keys are
   enabled on each SQLite connection. CHECK constraints cover enums, ratings,
   confidence, duration, and counts.
@@ -177,9 +179,10 @@ latency remain unmeasured.
 
 Fallback-only operation costs **$0 in model API usage**. For an illustrative
 paid-tier estimate, assume at most 3,000 input tokens and 700 output tokens
-per HTTP attempt, and use the standard paid rate currently listed for the
-previous-generation Flash model: $0.75 per 1M input tokens and $3.75 per 1M
-output tokens through December 31, 2026. At the configured cap of 50 outbound
+per HTTP attempt, and use the Gemini 3.8 Flash standard paid rate listed for
+October 2026: $0.75 per 1M input tokens and $3.75 per 1M output tokens through
+December 31, 2026. The published rates are scheduled to increase to $1.50 and
+$7.50 respectively from January 1, 2027. At the configured cap of 50 outbound
 attempts per day:
 
 - Input: `50 × 3,000 × $0.75 / 1,000,000 = $0.1125/day`
@@ -188,9 +191,10 @@ attempts per day:
 
 This is a budget estimate, not observed usage; actual token counts and
 model-specific prices may differ. Re-check the [official Gemini API pricing
-page](https://ai.google.dev/gemini-api/docs/pricing) before deployment. The
-daily cap counts each outbound attempt, including retries, so retry traffic
-does not bypass the cap.
+page](https://ai.google.dev/gemini-api/docs/pricing) and [Gemini 3.8 Flash
+model documentation](https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash)
+before deployment. The daily cap counts each outbound attempt, including
+retries, so retry traffic does not bypass the cap.
 
 ## Production rollout
 

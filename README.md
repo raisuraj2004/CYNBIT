@@ -18,6 +18,8 @@ synthetic catalogue for this proof of concept, not official Cynbit curriculum.
   limits, and a character allowlist for tool/language names.
 - TF-IDF text similarity blended with transparent skill, interest, goal,
   education, and weekly-time weights.
+- The form requires at least one tool, interest, or background detail so an
+  empty profile cannot receive a misleading one-size-fits-all recommendation.
 - Optional Gemini 2.5 Flash recommendation adapter; Gemini receives only the
   sanitized profile and top five catalogue candidates, and must return strict
   schema-valid JSON with an allowlisted track ID.
@@ -47,14 +49,23 @@ the app in fallback mode:
 ```powershell
 $env:GOOGLE_API_KEY = "your-key"
 # Optional:
-$env:GEMINI_MODEL = "gemini-2.5-flash"
+$env:GEMINI_MODEL = "gemini-3.8-flash"
 # Optional SQLite path:
 $env:BIT_ELEVATE_DB_PATH = "data/pathfinder.sqlite3"
 streamlit run app.py
 ```
 
-Do not put real keys in source files or commit `.env`; `.env.example` contains
-only variable names. The UI asks for separate consent before sending a profile
+Alternatively, create the ignored local file `.streamlit/secrets.toml`:
+
+```toml
+GOOGLE_API_KEY = "paste-your-new-key-here"
+GEMINI_MODEL = "gemini-3.8-flash"
+```
+
+Restart `streamlit run app.py` after changing environment variables or secrets.
+The app shows whether it found a key but never displays its value.
+Do not put real keys in source files, `.env.example`, or Git; that template
+contains only variable names. The UI asks for separate consent before sending a profile
 to Gemini and before storing a recommendation. When “Don't store my
 recommendation or profile” is enabled (the default), the recommendation and
 profile are not persisted; hashed operational rate-limit counters are still

@@ -36,7 +36,10 @@ def get_recommendation(
         except LLMError:
             note = "Gemini was unavailable or returned invalid output; a rule-based recommendation is shown instead."
     elif allow_gemini:
-        note = "No Gemini API key is configured; a rule-based recommendation is shown instead."
+        note = (
+            "No Gemini API key was found in the app environment or Streamlit secrets; "
+            "a rule-based recommendation is shown instead."
+        )
     else:
         note = "Gemini processing was not enabled; a rule-based recommendation is shown instead."
 

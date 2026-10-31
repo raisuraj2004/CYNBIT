@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from config import (
     MAX_ABOUT_CHARS,
@@ -64,6 +64,14 @@ class TrackProfile(BaseModel):
     weekly_hours: int = Field(ge=MIN_WEEKLY_HOURS, le=MAX_WEEKLY_HOURS)
     goal: Goal
     about_me: str = Field(max_length=MAX_ABOUT_CHARS)
+
+    @model_validator(mode="after")
+    def require_profile_signal(self) -> "TrackProfile":
+        if not (self.known_tools or self.interests or self.about_me):
+            raise ValueError(
+                "Provide at least one known tool, interest, or background detail."
+            )
+        return self
 
     @field_validator("known_tools")
     @classmethod

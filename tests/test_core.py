@@ -53,6 +53,11 @@ def test_profile_schema_rejects_invalid_values(overrides):
         valid_profile(**overrides)
 
 
+def test_profile_requires_at_least_one_personalization_signal():
+    with pytest.raises(ValueError, match="at least one known tool"):
+        valid_profile(known_tools=[], interests=[], about_me="")
+
+
 def test_catalogue_has_all_sixteen_unique_tracks(catalogue):
     assert len(catalogue) == 16
     assert len({track.id for track in catalogue}) == 16
@@ -79,6 +84,31 @@ def test_fallback_is_valid_deterministic_and_catalogue_bounded():
     assert first.confidence >= 0
     assert len(first.roadmap) >= 2
     assert first.first_task
+
+
+def test_fallback_recommendation_changes_for_distinct_profile_signals():
+    web_profile = valid_profile(
+        known_tools=["JavaScript", "HTML", "CSS"],
+        interests=["web development", "frontend", "APIs"],
+        about_me="I want to build websites and backend APIs.",
+    )
+    design_profile = valid_profile(
+        known_tools=["Figma"],
+        interests=["user research", "wireframes", "prototypes"],
+        about_me="I want to design usable interfaces and prototypes.",
+    )
+    data_profile = valid_profile(
+        known_tools=["Python", "pandas", "scikit-learn"],
+        interests=["machine learning", "statistics"],
+        about_me="I want to train predictive models and analyze data.",
+    )
+
+    recommendations = {
+        recommend_fallback(profile).recommended_track
+        for profile in (web_profile, design_profile, data_profile)
+    }
+
+    assert recommendations == {"full-stack", "ui-ux", "machine-learning"}
 
 
 def test_db_parameterization_and_free_text_exclusion(database, tmp_path):

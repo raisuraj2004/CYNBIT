@@ -8,6 +8,9 @@ from urllib.error import URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+import streamlit as st
+from streamlit.errors import StreamlitSecretNotFoundError
+
 from config import (
     DEFAULT_GEMINI_MODEL,
     GEMINI_MODEL_PATTERN,
@@ -50,6 +53,18 @@ _MODEL_PATTERN = re.compile(GEMINI_MODEL_PATTERN)
 
 class LLMError(Exception):
     """A safe, user-presentable category for provider or response failures."""
+
+
+def configured_value(name: str, default: str = "") -> str:
+    """Read a setting from the environment, then Streamlit secrets."""
+    value = os.environ.get(name, "").strip()
+    if value:
+        return value
+    try:
+        secret_value = st.secrets.get(name, default)
+    except StreamlitSecretNotFoundError:
+        return default
+    return secret_value.strip() if isinstance(secret_value, str) else default
 
 
 def build_prompt(profile: TrackProfile, candidates: list[Track]) -> str:
@@ -114,11 +129,11 @@ class GeminiAdapter:
         cls,
         before_attempt: Callable[[], bool] | None = None,
     ) -> "GeminiAdapter | None":
-        """Create an adapter only when GOOGLE_API_KEY is configured."""
-        api_key = os.environ.get("GOOGLE_API_KEY", "").strip()
+        """Create an adapter from environment variables or Streamlit secrets."""
+        api_key = configured_value("GOOGLE_API_KEY")
         if not api_key:
             return None
-        model_name = os.environ.get("GEMINI_MODEL", DEFAULT_GEMINI_MODEL).strip()
+        model_name = configured_value("GEMINI_MODEL", DEFAULT_GEMINI_MODEL)
         return cls(api_key, model_name=model_name, before_attempt=before_attempt)
 
     def _request_text(self, prompt: str) -> str:
