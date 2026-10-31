@@ -6,6 +6,7 @@ import pytest
 import core.llm as llm_module
 from config import DEFAULT_GEMINI_MODEL
 from core.llm import GeminiAdapter, LLMError, build_prompt, parse_recommendation
+from core.recommendation_service import _fallback_note
 from core.recommendation_service import get_recommendation
 from core.security_cases import INJECTION_TEST_CASES
 from core.sanitize import sanitize_profile
@@ -119,6 +120,37 @@ def test_provider_http_call_has_bounded_timeout(monkeypatch):
     assert observed["timeout"] == 9
 
 
+@pytest.mark.parametrize(
+    ("status", "diagnostic"),
+    [(400, "http_400"), (401, "http_401"), (403, "http_403"), (404, "http_404"), (429, "http_429")],
+)
+def test_provider_http_errors_retain_only_safe_status(monkeypatch, status, diagnostic):
+    from urllib.error import HTTPError
+
+    def fake_urlopen(request, timeout):
+        raise HTTPError(request.full_url, status, "private provider detail", {}, None)
+
+    monkeypatch.setattr(llm_module, "urlopen", fake_urlopen)
+    adapter = GeminiAdapter("sample-api-key")
+    with pytest.raises(LLMError) as raised:
+        adapter._request_text("synthetic diagnostic request")
+    assert raised.value.diagnostic == diagnostic
+    assert "private provider detail" not in str(raised.value)
+
+
+@pytest.mark.parametrize(
+    ("diagnostic", "expected_text"),
+    [
+        ("http_403", "Check the key"),
+        ("http_503", "No key change is indicated"),
+    ],
+)
+def test_fallback_note_suggests_action_from_safe_http_status(diagnostic, expected_text):
+    note = _fallback_note(LLMError("request failed", diagnostic=diagnostic))
+    assert expected_text in note
+    assert "rule-based recommendation" in note
+
+
 def test_provider_rejects_unbounded_timeouts_and_model_names():
     with pytest.raises(ValueError, match="timeout"):
         GeminiAdapter("test-key", timeout_seconds=30)
@@ -127,7 +159,10 @@ def test_provider_rejects_unbounded_timeouts_and_model_names():
 
 
 def test_fallback_is_available_without_api_key(monkeypatch):
+    import streamlit as st
+
     monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.setattr(st, "secrets", {})
     outcome = get_recommendation(make_profile("I enjoy programming"), allow_gemini=True)
     assert outcome.source == "fallback"
     assert "No Gemini API key" in outcome.note

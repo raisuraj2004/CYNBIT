@@ -3,8 +3,10 @@
 import json
 import os
 import re
+import socket
+import ssl
 from typing import Callable
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -54,6 +56,10 @@ _MODEL_PATTERN = re.compile(GEMINI_MODEL_PATTERN)
 class LLMError(Exception):
     """A safe, user-presentable category for provider or response failures."""
 
+    def __init__(self, message: str, diagnostic: str = "invalid_response") -> None:
+        super().__init__(message)
+        self.diagnostic = diagnostic
+
 
 def configured_value(name: str, default: str = "") -> str:
     """Read a setting from the environment, then Streamlit secrets."""
@@ -97,9 +103,15 @@ def parse_recommendation(raw_json: str, allowed_track_ids: set[str]) -> Recommen
         payload = json.loads(raw_json)
         recommendation = Recommendation.model_validate(payload, strict=True)
     except (json.JSONDecodeError, ValueError, TypeError):
-        raise LLMError("The provider returned an invalid recommendation.") from None
+        raise LLMError(
+            "The provider returned an invalid recommendation.",
+            diagnostic="invalid_output",
+        ) from None
     if recommendation.recommended_track not in allowed_track_ids:
-        raise LLMError("The provider selected a track outside the catalogue.")
+        raise LLMError(
+        "The provider selected a track outside the catalogue.",
+        diagnostic="track_not_allowed",
+        )
     return recommendation
 
 
@@ -160,8 +172,50 @@ class GeminiAdapter:
             with urlopen(request, timeout=self.timeout_seconds) as response:
                 response_payload = json.loads(response.read().decode("utf-8"))
             return response_payload["candidates"][0]["content"]["parts"][0]["text"]
-        except (URLError, TimeoutError, OSError, KeyError, IndexError, TypeError, json.JSONDecodeError):
-            raise LLMError("Gemini did not return a usable response.") from None
+        except HTTPError as error:
+            raise LLMError(
+                "Gemini rejected the request.",
+                diagnostic=f"http_{error.code}",
+            ) from None
+        except (TimeoutError, socket.timeout):
+            raise LLMError(
+                "Gemini request timed out.",
+                diagnostic="request_timeout",
+            ) from None
+        except URLError as error:
+            reason = error.reason
+            if isinstance(reason, (TimeoutError, socket.timeout)):
+                diagnostic = "request_timeout"
+            elif isinstance(reason, ssl.SSLError):
+                diagnostic = "tls_error"
+            elif isinstance(reason, socket.gaierror):
+                diagnostic = "dns_error"
+            else:
+                diagnostic = "connection_error"
+            raise LLMError(
+                "Gemini could not be reached.",
+                diagnostic=diagnostic,
+            ) from None
+        except ssl.SSLError:
+            raise LLMError(
+                "Gemini connection could not be secured.",
+                diagnostic="tls_error",
+            ) from None
+        except json.JSONDecodeError:
+            raise LLMError(
+                "Gemini returned an unreadable response.",
+                diagnostic="provider_invalid_json",
+            ) from None
+        except (KeyError, IndexError, TypeError):
+            raise LLMError(
+                "Gemini returned an incomplete response.",
+                diagnostic="provider_response_unreadable",
+            ) from None
+        except OSError:
+            raise LLMError(
+                "Gemini connection failed.",
+                diagnostic="connection_error",
+            ) from None
 
     def generate(
         self,
@@ -174,7 +228,10 @@ class GeminiAdapter:
         last_error: LLMError | None = None
         for _ in range(MAX_LLM_ATTEMPTS):
             if not self.before_attempt():
-                raise LLMError("The daily Gemini request limit has been reached.")
+                raise LLMError(
+                    "The daily Gemini request limit has been reached.",
+                    diagnostic="daily_limit",
+                )
             try:
                 raw_response = self._request_text(prompt)
                 return parse_recommendation(raw_response, allowed_track_ids)
