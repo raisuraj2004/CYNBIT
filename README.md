@@ -20,7 +20,7 @@ synthetic catalogue for this proof of concept, not official Cynbit curriculum.
   education, and weekly-time weights.
 - The form requires at least one tool, interest, or background detail so an
   empty profile cannot receive a misleading one-size-fits-all recommendation.
-- Optional Gemini 2.5 Flash recommendation adapter; Gemini receives only the
+- Optional Gemini 3.8 Flash recommendation adapter; Gemini receives only the
   sanitized profile and top five catalogue candidates, and must return strict
   schema-valid JSON with an allowlisted track ID.
 - A deterministic local fallback works without an API key and is used on
